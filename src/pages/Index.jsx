@@ -8,9 +8,19 @@ const Index = () => {
 
   const handleAddTodo = () => {
     if (inputValue.trim()) {
-      setTodos([...todos, inputValue]);
+      setTodos([...todos, { text: inputValue, completed: false }]);
       setInputValue("");
     }
+  };
+
+  const handleDelete = (index) => {
+    const newTodos = todos.filter((_, i) => i !== index);
+    setTodos(newTodos);
+  };
+
+  const handleToggleComplete = (index) => {
+    const newTodos = todos.map((todo, i) => (i === index ? { ...todo, completed: !todo.completed } : todo));
+    setTodos(newTodos);
   };
 
   return (
@@ -27,7 +37,11 @@ const Index = () => {
       <ul className="list-disc pl-5">
         {todos.map((todo, index) => (
           <li key={index} className="mb-2">
-            {todo}
+            <span className={todo.completed ? "line-through" : ""}>{todo.text}</span>
+            <button onClick={() => handleDelete(index)} className="bg-red-500 text-white p-1 ml-2 rounded">
+              Delete
+            </button>
+            <input type="checkbox" checked={todo.completed} onChange={() => handleToggleComplete(index)} className="ml-2" />
           </li>
         ))}
       </ul>
