@@ -1,6 +1,6 @@
 // Complete the Index page component here
 import { FaPlus } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Index = () => {
   const [todos, setTodos] = useState([]);
@@ -10,18 +10,37 @@ const Index = () => {
     if (inputValue.trim()) {
       setTodos([...todos, { text: inputValue, completed: false }]);
       setInputValue("");
+      localStorage.setItem("todos", JSON.stringify([...todos, { text: inputValue, completed: false }]));
     }
+  };
+
+  const handleEditTodo = (index, newText) => {
+    const newTodos = todos.map((todo, i) => (i === index ? { ...todo, text: newText } : todo));
+    setTodos(newTodos);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
   };
 
   const handleDelete = (index) => {
     const newTodos = todos.filter((_, i) => i !== index);
     setTodos(newTodos);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
   };
 
   const handleToggleComplete = (index) => {
     const newTodos = todos.map((todo, i) => (i === index ? { ...todo, completed: !todo.completed } : todo));
     setTodos(newTodos);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
   };
+
+  useEffect(() => {
+    const storedTodos = JSON.parse(localStorage.getItem("todos"));
+    if (storedTodos) {
+      setTodos(storedTodos);
+    }
+  }, []);
+
+  const [editIndex, setEditIndex] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
   return (
     <div className="container mx-auto p-4">
@@ -37,9 +56,31 @@ const Index = () => {
       <ul className="list-disc pl-5">
         {todos.map((todo, index) => (
           <li key={index} className="mb-2">
-            <span className={todo.completed ? "line-through" : ""}>{todo.text}</span>
+            {editIndex === index ? (
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => {
+                  handleEditTodo(index, editValue);
+                  setEditIndex(null);
+                }}
+                className="border p-2 mr-2"
+              />
+            ) : (
+              <span className={todo.completed ? "line-through" : ""}>{todo.text}</span>
+            )}
             <button onClick={() => handleDelete(index)} className="bg-red-500 text-white p-1 ml-2 rounded">
               Delete
+            </button>
+            <button
+              onClick={() => {
+                setEditIndex(index);
+                setEditValue(todo.text);
+              }}
+              className="bg-yellow-500 text-white p-1 ml-2 rounded"
+            >
+              Edit
             </button>
             <input type="checkbox" checked={todo.completed} onChange={() => handleToggleComplete(index)} className="ml-2" />
           </li>
